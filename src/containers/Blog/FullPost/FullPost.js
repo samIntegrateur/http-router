@@ -9,22 +9,31 @@ class FullPost extends Component {
         loadedPost: null
     };
 
-    componentDidUpdate(prevProps, prevState, snapshot) {
-        if (this.props.id) {
-          // avoid infinite loop
-          if (!this.state.loadedPost || (this.state.loadedPost && this.state.loadedPost.id !== this.props.id)) {
-            axios.get('/posts/' + this.props.id)
-              .then(response => {
-                console.log('response', response);
-                this.setState({loadedPost: response.data});
-              });
-          }
-
-        }
+    componentDidMount() {
+      this.loadData();
     }
 
-    deletePostHandler = () => {
-      axios.delete('/posts/' + this.props.id)
+    componentDidUpdate(prevProps, prevState, snapshot) {
+      this.loadData();
+    }
+
+    loadData = () => {
+      if (this.props.match.params.id) {
+        // avoid infinite loop
+        // nb: id from params is a string
+        if (!this.state.loadedPost || (this.state.loadedPost && this.state.loadedPost.id != this.props.match.params.id)) {
+          axios.get('/posts/' + this.props.match.params.id)
+            .then(response => {
+              console.log('response', response);
+              this.setState({loadedPost: response.data});
+            });
+        }
+
+      }
+    }
+
+  deletePostHandler = () => {
+      axios.delete('/posts/' + this.props.match.params.id)
         .then(response => {
           console.log('response', response);
         });
@@ -32,7 +41,7 @@ class FullPost extends Component {
 
     render() {
       let post = <p style={{textAlign: 'center'}}>Please select a Post!</p>;
-      if (this.props.id) {
+      if (this.props.match.params.id) {
         post = <p style={{textAlign: 'center'}}>Loading...</p>;
       }
       if (this.state.loadedPost) {
